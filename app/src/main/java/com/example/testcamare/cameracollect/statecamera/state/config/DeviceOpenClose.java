@@ -1,4 +1,4 @@
-package com.example.testcamare.cameracollect.statecamera2.state.config;
+package com.example.testcamare.cameracollect.statecamera.state.config;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -6,8 +6,11 @@ import android.graphics.SurfaceTexture;
 import android.hardware.camera2.*;
 import android.view.Surface;
 import androidx.annotation.NonNull;
-import com.example.testcamare.cameracollect.statecamera2.state.CameraContext2;
+import com.example.testcamare.cameracollect.statecamera.state.CameraContext;
 import com.example.testcamare.utils.LogUtilFromSDK;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /***********************************************************
  * 创建时间:2020/7/24
@@ -19,14 +22,17 @@ import com.example.testcamare.utils.LogUtilFromSDK;
 public class DeviceOpenClose extends CameraDevice.StateCallback {
     private CameraParams cameraParams;
     //设备开启回调监听
-    private OnDeviceClosed onDeviceClosed;
+    private List<OnDeviceOpen> onDeviceOpenList;
     //设备关闭回调监听
-    private OnDeviceOpen onDeviceOpen;
+    private List<OnDeviceClosed> onDeviceClosedList;
     //设备异常回调接口
-    private OnCameraException onCameraException;
+    private List<OnCameraException> onCameraExceptionList;
 
     public DeviceOpenClose(CameraParams cameraParams) {
         this.cameraParams = cameraParams;
+        this.onDeviceOpenList = new ArrayList<>();
+        this.onDeviceClosedList = new ArrayList<>();
+        this.onCameraExceptionList = new ArrayList<>();
     }
 
     /**
@@ -34,8 +40,9 @@ public class DeviceOpenClose extends CameraDevice.StateCallback {
      *
      * @param onDeviceClosed 相机关闭监听回调
      */
-    public void setOnDeviceClosed(OnDeviceClosed onDeviceClosed) {
-        this.onDeviceClosed = onDeviceClosed;
+    public void registerOnDeviceClosed(OnDeviceClosed onDeviceClosed) {
+        if (!onDeviceClosedList.contains(onDeviceClosed))
+            this.onDeviceClosedList.add(onDeviceClosed);
     }
 
     /**
@@ -44,8 +51,9 @@ public class DeviceOpenClose extends CameraDevice.StateCallback {
      *
      * @param onDeviceOpen 设置相机开启 监听回调
      */
-    public void setOnDeviceOpen(OnDeviceOpen onDeviceOpen) {
-        this.onDeviceOpen = onDeviceOpen;
+    public void registerOnDeviceOpen(OnDeviceOpen onDeviceOpen) {
+        if (!onDeviceOpenList.contains(onDeviceOpen))
+            this.onDeviceOpenList.add(onDeviceOpen);
     }
 
     /**
@@ -53,8 +61,9 @@ public class DeviceOpenClose extends CameraDevice.StateCallback {
      *
      * @param onCameraException 自定义的相机异常
      */
-    public void setOnCameraException(OnCameraException onCameraException) {
-        this.onCameraException = onCameraException;
+    public void registerOnCameraException(OnCameraException onCameraException) {
+        if (!onCameraExceptionList.contains(onCameraException))
+            this.onCameraExceptionList.add(onCameraException);
     }
 
     /**
@@ -65,7 +74,7 @@ public class DeviceOpenClose extends CameraDevice.StateCallback {
      * @throws IllegalArgumentException 相机其他异常
      */
     @SuppressLint("MissingPermission")
-    public void openCamera(CameraContext2.ContextHandler handler) {
+    public void openCamera(CameraContext.ContextHandler handler) {
         try {
             CameraManager cameraManager = (CameraManager) cameraParams.getContext().getSystemService(Context.CAMERA_SERVICE);
             cameraManager.openCamera(cameraParams.getRearFacingCamareid(), this, handler);
@@ -77,7 +86,7 @@ public class DeviceOpenClose extends CameraDevice.StateCallback {
 
     @Override
     public void onOpened(@NonNull CameraDevice camera) {
-        if (onDeviceOpen != null) {
+        if (onDeviceOpenList != null) {
             cameraParams.setCameraDevice(camera);
             perviewSession();
         }
@@ -98,8 +107,14 @@ public class DeviceOpenClose extends CameraDevice.StateCallback {
     @Override
     public void onClosed(@NonNull CameraDevice camera) {
         super.onClosed(camera);
-        if (onDeviceClosed != null)
+        for (OnDeviceClosed onDeviceClosed : onDeviceClosedList) {
+            //关闭回调执行前
             onDeviceClosed.onClosed(camera);
+        }
+        //关闭回调执行后
+        this.onDeviceOpenList.clear();
+        this.onDeviceClosedList.clear();
+        this.onCameraExceptionList.clear();
     }
 
     /**
@@ -122,13 +137,15 @@ public class DeviceOpenClose extends CameraDevice.StateCallback {
                 @Override
                 public void onConfigured(@NonNull CameraCaptureSession session) {
                     cameraParams.setCameraSession(session);
-                    onDeviceOpen.onOpened(captureRequest);
+                    if (onDeviceOpenList != null)
+                        for (OnDeviceOpen onDeviceOpen : onDeviceOpenList) {
+                            onDeviceOpen.onOpened(captureRequest);
+                        }
                 }
 
                 @Override
                 public void onConfigureFailed(@NonNull CameraCaptureSession session) {
                     LogUtilFromSDK.getInstance().e("相机状态----session建立失败");
-
                 }
             }, null);
         } catch (CameraAccessException | IllegalStateException | IllegalArgumentException e) {
@@ -144,13 +161,11 @@ public class DeviceOpenClose extends CameraDevice.StateCallback {
      */
     public void setRepeateRequest(CaptureRequest.Builder builder,
                                   CameraCaptureSession.CaptureCallback captureCallback) {
-
         try {
             cameraParams.getCameraSession().setRepeatingRequest(builder.build(), captureCallback, null);
         } catch (CameraAccessException | IllegalStateException e) {
             cameraException("相机画面捕获异常", e);
         }
-
     }
 
     /**
@@ -165,8 +180,10 @@ public class DeviceOpenClose extends CameraDevice.StateCallback {
         try {
             throw jbCameraException;
         } catch (JbCameraException cameraException) {
-            if (onCameraException != null)
-                onCameraException.onException(jbCameraException);
+            if (onCameraExceptionList != null)
+                for (OnCameraException onCameraException : onCameraExceptionList) {
+                    onCameraException.onException(jbCameraException);
+                }
         }
     }
 

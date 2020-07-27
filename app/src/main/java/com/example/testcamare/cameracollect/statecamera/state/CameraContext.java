@@ -1,4 +1,4 @@
-package com.example.testcamare.cameracollect.statecamera2.state;
+package com.example.testcamare.cameracollect.statecamera.state;
 
 import android.content.Context;
 import android.graphics.SurfaceTexture;
@@ -7,8 +7,7 @@ import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
 import android.util.SparseArray;
-import com.example.testcamare.cameracollect.statecamera2.state.config.CameraParams;
-import com.example.testcamare.cameracollect.statecamera2.state.config.DeviceOpenClose;
+import com.example.testcamare.cameracollect.statecamera.state.config.*;
 
 /***********************************************************
  * 创建时间:2020/7/24
@@ -17,19 +16,21 @@ import com.example.testcamare.cameracollect.statecamera2.state.config.DeviceOpen
  * 备注信息: {该类中用于对客户端提供了操作相机的开启和关闭功能，也初始化了
  *           开启相机的很多配置参数类}
  **********************************************************/
-public class CameraContext2 {
-    private static final String TAG = CameraContext2.class.getSimpleName();
+public class CameraContext {
+    private static final String TAG = CameraContext.class.getSimpleName();
     final CloseCameraState CLOSE_CAMERA_STATE = new CloseCameraState();
     final OpenCameraState OPEN_CAMERA_STATE = new OpenCameraState();
-    public CameraState2 mCurrentState;
+    public CameraState mCurrentState;
     private ContextHandler handler;
     private HandlerThread handlerThread;
     private CameraParams cameraParams;
     private DeviceOpenClose deviceOpenClose;
 
-    public CameraContext2() {
+    public CameraContext() {
+        CameraThreadException threadException = new CameraThreadException();
         handlerThread = new HandlerThread(TAG + "_HandlerThread");
         handlerThread.start();
+        handlerThread.setUncaughtExceptionHandler(threadException);
         handler = new ContextHandler(handlerThread.getLooper());
         cameraParams = new CameraParams();
         deviceOpenClose = new DeviceOpenClose(cameraParams);
@@ -42,7 +43,7 @@ public class CameraContext2 {
      *
      * @param currentState
      */
-    void setCurrentState(CameraState2 currentState) {
+    void setCurrentState(CameraState currentState) {
         mCurrentState = currentState;
         mCurrentState.setCameraContext(this);
         mCurrentState.setCameraParams(cameraParams);
@@ -59,8 +60,10 @@ public class CameraContext2 {
      */
     public void openCamera(Context context, SurfaceTexture surfaceTexture) {
         //如果除了UI线程还有替他线程设置 渲染Surface 那么要考虑并发问题
-        if (!cameraParams.getSurfaceTextureList().contains(surfaceTexture)) {
-            cameraParams.getSurfaceTextureList().add(surfaceTexture);
+        synchronized (this) {
+            if (!cameraParams.getSurfaceTextureList().contains(surfaceTexture)) {
+                cameraParams.getSurfaceTextureList().add(surfaceTexture);
+            }
         }
         cameraParams.setContext(context);
         handler.obtainMessage(handler.CAMERA_OPEN).sendToTarget();
@@ -76,6 +79,18 @@ public class CameraContext2 {
         cameraParams.getSurfaceTextureList().clear();
     }
 
+    public void registerOnDeviceOpen(OnDeviceOpen onDeviceOpen) {
+        deviceOpenClose.registerOnDeviceOpen(onDeviceOpen);
+    }
+
+    public void registerOnDeviceClosed(OnDeviceClosed onDeviceClosed) {
+        deviceOpenClose.registerOnDeviceClosed(onDeviceClosed);
+    }
+
+    public void registerOnCameraException(OnCameraException cameraException) {
+        deviceOpenClose.registerOnCameraException(cameraException);
+    }
+
     ContextHandler getHandler() {
         return handler;
     }
@@ -88,16 +103,16 @@ public class CameraContext2 {
         //发送关闭循环消息标记
         public static final int CAMERA_CLOSE_DELAYED = 0x22;
         private SparseArray<SendDelayed> delayedSparseArray;
-        private CameraState2 mCurrentState;
+        private CameraState mCurrentState;
 
         /**
          * 设置当前状态
          * 为了防止多线程并发问题，该方法一定要在和handler同一个线程中调用，建议在
-         * {@link CameraContext2#setCurrentState(CameraState2)} 方法中调用 }
+         * {@link CameraContext#setCurrentState(CameraState)} 方法中调用 }
          *
          * @param currentState 当前状态
          */
-        public void setCurrentState(CameraState2 currentState) {
+        public void setCurrentState(CameraState currentState) {
             this.mCurrentState = currentState;
         }
 

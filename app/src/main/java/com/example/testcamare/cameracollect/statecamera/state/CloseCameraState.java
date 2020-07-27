@@ -1,11 +1,11 @@
-package com.example.testcamare.cameracollect.statecamera2.state;
+package com.example.testcamare.cameracollect.statecamera.state;
 
 import android.hardware.camera2.CameraDevice;
 import android.os.Build;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
-import com.example.testcamare.cameracollect.statecamera2.state.CameraContext2.ContextHandler;
-import com.example.testcamare.cameracollect.statecamera2.state.config.OnDeviceClosed;
+import com.example.testcamare.cameracollect.statecamera.state.CameraContext.ContextHandler;
+import com.example.testcamare.cameracollect.statecamera.state.config.OnDeviceClosed;
 import com.example.testcamare.utils.LogUtilFromSDK;
 
 /***********************************************************
@@ -14,7 +14,7 @@ import com.example.testcamare.utils.LogUtilFromSDK;
  * 功能描述: 相机关闭状态
  * 备注信息: {该类中有两种状态 CLOSE_CAMERA_INIT 关闭初始态、CLOSE_CAMERA关闭完成状态}
  **********************************************************/
-public class CloseCameraState extends CameraState2 implements OnDeviceClosed {
+public class CloseCameraState extends CameraState implements OnDeviceClosed {
     //关闭 状态 初始化
     private final int CLOSE_CAMERA_INIT = 440;
     //关闭 状态
@@ -69,7 +69,7 @@ public class CloseCameraState extends CameraState2 implements OnDeviceClosed {
                     }
                 });
         //设置监听
-        deviceOpenClose.setOnDeviceClosed(this);
+        deviceOpenClose.registerOnDeviceClosed(this);
         //即使上面的递归会循环调用closeCamera()但是也只会请求一次close()
         if (cameraParams.getCameraSession() != null) {
             cameraParams.getCameraSession().close();

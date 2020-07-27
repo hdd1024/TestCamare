@@ -3,24 +3,25 @@ package com.example.testcamare;
 import android.app.Presentation;
 import android.content.Context;
 import android.graphics.SurfaceTexture;
+import android.hardware.camera2.CameraDevice;
+import android.hardware.camera2.CaptureRequest;
 import android.hardware.display.DisplayManager;
 import android.os.Bundle;
 import android.view.Display;
-import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.Toast;
+import androidx.annotation.NonNull;
 import com.example.testcamare.cameracollect.Camera2Manager;
-import com.example.testcamare.cameracollect.Camera3Manager;
-import com.example.testcamare.cameracollect.Camera4Manager;
-import com.example.testcamare.cameracollect.statecamera2.CameraHelper;
+import com.example.testcamare.cameracollect.statecamera.CameraHelper;
+import com.example.testcamare.cameracollect.statecamera.state.config.OnDeviceClosed;
+import com.example.testcamare.cameracollect.statecamera.state.config.OnDeviceOpen;
 import com.example.testcamare.utils.JBDeviceUtil;
 import com.example.testcamare.utils.LogUtilFromSDK;
 
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -130,7 +131,13 @@ public class MaxScreenPresentation extends Presentation implements TextureView.S
 //        Camera2Manager.init().claseSsionStop();
 //        Camera3Manager.getInstance().closeCamera();
 //        Camera4Manager.getInstance().closeCamera();
-        CameraHelper.getInstance().closeCamera();
+        CameraHelper.getInstance()
+                .registerOnCameraClose(new OnDeviceClosed() {
+                    @Override
+                    public void onClosed(@NonNull CameraDevice camera) {
+                        LogUtilFromSDK.getInstance().e("相机关闭喽！");
+                    }
+                }).closeCamera();
         svMaxScreenPresentation = null;
         if (mSubscribeClos != null) {
             mSubscribeClos.dispose();
@@ -154,7 +161,14 @@ public class MaxScreenPresentation extends Presentation implements TextureView.S
 //            e.printStackTrace();
 //        }
 //        Camera4Manager.getInstance().openCamera(getContext(),texture);
-        CameraHelper.getInstance().openCamera(getContext(), texture);
+        CameraHelper.getInstance()
+                .registerOnCameraOpen(new OnDeviceOpen() {
+                    @Override
+                    public void onOpened(CaptureRequest.Builder builder) {
+                        LogUtilFromSDK.getInstance().e("相机打开喽！");
+                    }
+                })
+                .openCamera(getContext(), texture);
 
     }
 

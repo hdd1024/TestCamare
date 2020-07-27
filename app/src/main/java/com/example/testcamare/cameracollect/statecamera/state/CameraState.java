@@ -1,20 +1,29 @@
 package com.example.testcamare.cameracollect.statecamera.state;
 
-import com.example.testcamare.cameracollect.statecamera.CameraContext;
-
+import com.example.testcamare.cameracollect.statecamera.state.config.CameraParams;
+import com.example.testcamare.cameracollect.statecamera.state.config.DeviceOpenClose;
+/***********************************************************
+ * 创建时间:2020/7/24
+ * 作   者: [hanmingze]
+ * 功能描述: 相机消息的父类
+ **********************************************************/
 public abstract class CameraState {
+    protected CameraContext mCameraContext;
+    protected CameraParams cameraParams;
+    protected DeviceOpenClose deviceOpenClose;
 
-    protected CameraContext cameraContext;
-
-    public void setCameraContext(CameraContext cameraContext) {
-        this.cameraContext = cameraContext;
+    public void setDeviceOpenClose(DeviceOpenClose deviceOpenClose) {
+        this.deviceOpenClose = deviceOpenClose;
     }
 
-    abstract void open();
+    public void setCameraContext(CameraContext cameraContext) {
+        mCameraContext = cameraContext;
+    }
 
-    abstract void capture();
+    public void setCameraParams(CameraParams cameraParams) {
+        this.cameraParams = cameraParams;
+    }
+    public abstract void openCamera();
 
-    abstract void stop();
-
-    abstract void closeCamera();
+    public abstract void closeCamera();
 }

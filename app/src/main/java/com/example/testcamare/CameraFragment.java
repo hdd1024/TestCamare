@@ -3,7 +3,6 @@ package com.example.testcamare;
 import android.graphics.SurfaceTexture;
 import android.os.Bundle;
 import android.view.LayoutInflater;
-import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,13 +12,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
-import com.example.testcamare.cameracollect.Camera2Manager;
-import com.example.testcamare.cameracollect.Camera3Manager;
-import com.example.testcamare.cameracollect.Camera4Manager;
-import com.example.testcamare.cameracollect.statecamera2.CameraHelper;
+import com.example.testcamare.cameracollect.statecamera.CameraHelper;
 import com.example.testcamare.utils.LogUtilFromSDK;
-
-import java.util.concurrent.TimeoutException;
 
 public class CameraFragment extends Fragment {
     FrameLayout fl_perview;

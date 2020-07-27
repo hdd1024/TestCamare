@@ -1,4 +1,4 @@
-package com.example.testcamare.cameracollect.statecamera2.state.config;
+package com.example.testcamare.cameracollect.statecamera.state.config;
 
 import com.example.testcamare.app.JbBaseException;
 

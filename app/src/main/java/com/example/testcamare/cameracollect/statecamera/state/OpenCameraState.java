@@ -1,13 +1,13 @@
-package com.example.testcamare.cameracollect.statecamera2.state;
+package com.example.testcamare.cameracollect.statecamera.state;
 
 import android.annotation.SuppressLint;
 import android.hardware.camera2.*;
 import android.os.Build;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
-import com.example.testcamare.cameracollect.statecamera2.state.config.JbCameraException;
-import com.example.testcamare.cameracollect.statecamera2.state.config.OnCameraException;
-import com.example.testcamare.cameracollect.statecamera2.state.config.OnDeviceOpen;
+import com.example.testcamare.cameracollect.statecamera.state.config.JbCameraException;
+import com.example.testcamare.cameracollect.statecamera.state.config.OnCameraException;
+import com.example.testcamare.cameracollect.statecamera.state.config.OnDeviceOpen;
 import com.example.testcamare.utils.LogUtilFromSDK;
 
 /***********************************************************
@@ -17,7 +17,7 @@ import com.example.testcamare.utils.LogUtilFromSDK;
  * 备注信息: {该类中定义了3中状态，OPEN_CAMERA_INIT 出事状态、OPEN_CAMERA_ING 开启中、
  *          OPEN_CAMERA 开启状态}
  **********************************************************/
-public class OpenCameraState extends CameraState2 implements OnDeviceOpen, OnCameraException {
+public class OpenCameraState extends CameraState implements OnDeviceOpen, OnCameraException {
     private final int OPEN_CAMERA_INIT = 220;
     private final int OPEN_CAMERA_ING = 221;
     private final int OPEN_CAMERA = 222;
@@ -42,8 +42,8 @@ public class OpenCameraState extends CameraState2 implements OnDeviceOpen, OnCam
         }
         //开启相机配置
         currentState = OPEN_CAMERA_ING;
-        deviceOpenClose.setOnDeviceOpen(this);
-        deviceOpenClose.setOnCameraException(this);
+        deviceOpenClose.registerOnDeviceOpen(this);
+        deviceOpenClose.registerOnCameraException(this);
         //开启相机
         deviceOpenClose.openCamera(mCameraContext.getHandler());
     }

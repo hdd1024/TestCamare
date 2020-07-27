@@ -1,4 +1,4 @@
-package com.example.testcamare.cameracollect.statecamera2.state.config;
+package com.example.testcamare.cameracollect.statecamera.state.config;
 
 import android.hardware.camera2.CaptureRequest;
 
@@ -7,7 +7,7 @@ import android.hardware.camera2.CaptureRequest;
  * 作   者: [hanmingze]
  * 功能描述: 相机打开回调接口
  * 备注信息: {客户端可以通过设置该接口来监听相机开启，该接口最终会在{@link
- *           DeviceOpenClose#setOnDeviceOpen(OnDeviceOpen)}}中被配置
+ *           DeviceOpenClose#registerOnDeviceOpen(OnDeviceOpen)}}中被配置
  *           会在{@link DeviceOpenClose#perviewSession()}中被调用}
  **********************************************************/
 public interface OnDeviceOpen {
