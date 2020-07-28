@@ -17,16 +17,17 @@ public class ExampleUnitTest {
 
 
     public static void main(String[] args) {
-        TestB testB=new TestB();
+        TestB testB = new TestB();
         testB.setName("王二小");
         testB.setAge(18);
-        System.out.println("TestB的姓名："+testB.getName());
+        System.out.println("TestB的姓名：" + testB.getName());
 
-        TestA testA=new TestA();
+        TestA testA = new TestA();
         testA.setTestB(testB);
+        testB = null;
         testA.clostB();
 
-        System.out.println(">>>>TestB的姓名>>>："+testB.getName());
+//        System.out.println(">>>>TestB的姓名>>>：" + testB.getName());
 
     }
 }

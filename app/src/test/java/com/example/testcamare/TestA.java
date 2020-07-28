@@ -10,7 +10,7 @@ public class TestA {
 
     public void clostB() {
         System.out.println("》》》》》"+testB.getName());
-        testB = null;
+//        testB = null;
         System.out.println("--------"+testB.getName());
     }
 }
